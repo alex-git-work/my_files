@@ -1,0 +1,15 @@
+{
+  "autoload": {
+    "psr-4": {
+      "App\\": "app",
+      "App\\Base\\": "app/Base",
+      "App\\Controllers\\": "app/Controllers",
+      "App\\Exceptions\\": "app/Exceptions",
+      "App\\Helpers\\": "app/Helpers",
+      "App\\Models\\": "app/Models"
+    }
+  },
+  "require": {
+    "php": ">=8.0"
+  }
+}
