@@ -18,8 +18,10 @@ if (params('debug_mode', false)) {
 
 $router = new Router();
 
+foreach ($allRoutes as $method => $routes) {
+    foreach ($routes as $uri => [$controller, $action]) {
+        $router->registerRoute($method, $uri, $controller, $action);
+    }
+}
+
 $app = new App();
-
-d($allRoutes);
-
-dd($app);
