@@ -11,3 +11,7 @@ use App\App;
 require_once __DIR__ . '/bootstrap.php';
 
 $app = new App();
+
+d($allRoutes);
+
+dd($app);
