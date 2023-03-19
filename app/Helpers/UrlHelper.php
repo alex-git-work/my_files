@@ -34,4 +34,28 @@ class UrlHelper
 
         return $requestUri;
     }
+
+    /**
+     * @param string $uri
+     * @param string $path
+     * @return array
+     */
+    public static function getUriParams(string $uri, string $path): array
+    {
+        if (str_contains($path, '*')) {
+            $pattern = explode('/', $path);
+            $params = explode('/', $uri);
+            $result = [];
+
+            foreach ($pattern as $key => $value) {
+                if ($value === '*') {
+                    $result[] = $params[$key];
+                }
+            }
+
+            return $result;
+        }
+
+        return [];
+    }
 }
