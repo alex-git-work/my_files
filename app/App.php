@@ -10,6 +10,9 @@ use Exception;
  */
 final class App
 {
+    public static Request $request;
+    public static Response $response;
+
     private Router $router;
 
     /**
