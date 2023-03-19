@@ -7,6 +7,7 @@
 declare(strict_types=1);
 
 use App\App;
+use App\Router;
 
 require_once __DIR__ . '/bootstrap.php';
 
@@ -15,8 +16,13 @@ if (params('debug_mode', false)) {
     ini_set('display_errors', '1');
 }
 
-$app = new App();
+$router = new Router();
 
-d($allRoutes);
+foreach ($allRoutes as $method => $routes) {
+    foreach ($routes as $uri => [$controller, $action]) {
+        $router->registerRoute($method, $uri, $controller, $action);
+    }
+}
 
-dd($app);
+$app = new App($router);
+$app->run();
