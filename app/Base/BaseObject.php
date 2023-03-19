@@ -3,6 +3,7 @@
 namespace App\Base;
 
 use App\Exceptions\InvalidCallException;
+use App\Exceptions\UnknownMethodException;
 use App\Exceptions\UnknownPropertyException;
 
 /**
@@ -69,5 +70,47 @@ class BaseObject
         } else {
             throw new UnknownPropertyException('Setting unknown property: ' . get_class($this) . '::' . $name);
         }
+    }
+
+    /**
+     * @param $name
+     * @return bool
+     */
+    public function __isset($name): bool
+    {
+        $getter = 'get' . $name;
+
+        if (method_exists($this, $getter)) {
+            return $this->$getter() !== null;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $name
+     * @return void
+     * @throws InvalidCallException
+     */
+    public function __unset($name): void
+    {
+        $setter = 'set' . $name;
+
+        if (method_exists($this, $setter)) {
+            $this->$setter(null);
+        } elseif (method_exists($this, 'get' . $name)) {
+            throw new InvalidCallException('Unsetting read-only property: ' . get_class($this) . '::' . $name);
+        }
+    }
+
+    /**
+     * @param string $name
+     * @param array $params
+     * @return mixed
+     * @throws UnknownMethodException
+     */
+    public function __call(string $name, array $params): mixed
+    {
+        throw new UnknownMethodException('Calling unknown method: ' . get_class($this) . "::$name()");
     }
 }
