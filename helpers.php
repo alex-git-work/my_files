@@ -1,5 +1,7 @@
 <?php
 
+use App\Helpers\ArrayHelper;
+
 if (!function_exists('configure')) {
     /**
      * Configures an object with the property values.
@@ -15,5 +17,21 @@ if (!function_exists('configure')) {
         }
 
         return $object;
+    }
+}
+
+if (!function_exists('params')) {
+    /**
+     * Gets the value of an environment variable.
+     *
+     * @param string $key
+     * @param mixed|null $default
+     * @return mixed
+     */
+    function params(string $key, mixed $default = null): mixed
+    {
+        $params = include ENV . (IS_DEV_SERVER ? 'params-local.php' : 'params.php');
+
+        return ArrayHelper::get($params, $key, $default);
     }
 }
