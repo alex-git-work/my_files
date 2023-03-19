@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Base\BaseObject;
+use App\Exceptions\ClassNotFoundException;
 use App\Helpers\StringHelper;
 use App\Helpers\UrlHelper;
 
@@ -57,9 +58,14 @@ final class Route extends BaseObject
         return false;
     }
 
-    public function run(string $uri)
+    /**
+     * @param string $uri
+     * @return mixed
+     * @throws ClassNotFoundException
+     */
+    public function run(string $uri): mixed
     {
-
+        return $this->call($uri);
     }
 
     /**
@@ -68,5 +74,23 @@ final class Route extends BaseObject
     public function getMethod(): string
     {
         return $this->method;
+    }
+
+    /**
+     * @param string $uri
+     * @return mixed
+     * @throws ClassNotFoundException
+     */
+    private function call(string $uri): mixed
+    {
+        if (!class_exists($this->controller)) {
+            throw new ClassNotFoundException($this->controller);
+        }
+
+        $controller = new $this->controller;
+        $action = $this->action;
+        $arguments = UrlHelper::getUriParams($uri, $this->uri);
+
+        return $controller->{$action}(...$arguments);
     }
 }

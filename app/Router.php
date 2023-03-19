@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Base\BaseObject;
+use App\Exceptions\ClassNotFoundException;
 use App\Exceptions\InvalidConfigException;
 use App\Exceptions\MethodNotAllowedException;
 use App\Exceptions\NotFoundException;
@@ -36,8 +37,9 @@ final class Router extends BaseObject
     /**
      * @throws MethodNotAllowedException
      * @throws NotFoundException
+     * @throws ClassNotFoundException
      */
-    public function dispatch()
+    public function dispatch(): mixed
     {
         $matchedRoutes = [];
 
