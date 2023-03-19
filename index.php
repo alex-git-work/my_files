@@ -24,4 +24,5 @@ foreach ($allRoutes as $method => $routes) {
     }
 }
 
-$app = new App();
+$app = new App($router);
+$app->run();

@@ -26,4 +26,13 @@ class MainController extends Controller
     {
         echo 'You are trying to find user with id: ' . $id;
     }
+
+    /**
+     * POST-requests only
+     * @return void
+     */
+    public function update(): void
+    {
+        echo 'success';
+    }
 }
