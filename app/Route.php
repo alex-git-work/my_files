@@ -3,11 +3,14 @@
 namespace App;
 
 use App\Base\BaseObject;
+use App\Helpers\StringHelper;
 use App\Helpers\UrlHelper;
 
 /**
  * Class Route
  * @package App
+ *
+ * @property-read string $method
  */
 final class Route extends BaseObject
 {
@@ -33,8 +36,37 @@ final class Route extends BaseObject
         parent::__construct($config);
     }
 
-    public function run()
+    /**
+     * @param string $value
+     * @return bool
+     */
+    public function match(string $value): bool
+    {
+        if ($this->uri === $value) {
+            return true;
+        }
+
+        if (str_contains($this->uri, '*')) {
+            $pattern = StringHelper::preparePatternFromString($this->uri);
+
+            if (preg_match($pattern, $value) !== false && preg_match($pattern, $value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function run(string $uri)
     {
 
+    }
+
+    /**
+     * @return string
+     */
+    public function getMethod(): string
+    {
+        return $this->method;
     }
 }
