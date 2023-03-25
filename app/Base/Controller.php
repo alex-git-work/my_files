@@ -25,4 +25,14 @@ class Controller extends BaseObject
 
         parent::init();
     }
+
+    /**
+     * @param array $data
+     * @return Response
+     */
+    protected function asJson(array $data = []): Response
+    {
+        $this->response->data = $data;
+        return $this->response;
+    }
 }

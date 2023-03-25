@@ -35,11 +35,12 @@ final class Router extends BaseObject
     }
 
     /**
+     * @return Response
+     * @throws ClassNotFoundException
      * @throws MethodNotAllowedException
      * @throws NotFoundException
-     * @throws ClassNotFoundException
      */
-    public function dispatch(): mixed
+    public function dispatch(): Response
     {
         $matchedRoutes = [];
 
