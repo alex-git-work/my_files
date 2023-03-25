@@ -33,11 +33,27 @@ final class App
             $response = $this->router->dispatch();
             $response->setStatusCode(200);
             $response->addData(['code' => 200]);
-            $this->sendResponse($response);
         } catch (Exception $e) {
-            http_response_code($e->getCode());
-            echo $e->getMessage();
+            $response = $this->getErrorResponse($e);
+        } finally {
+            $this->sendResponse($response);
         }
+    }
+
+    /**
+     * @param Exception $e
+     * @return Response
+     */
+    private function getErrorResponse(Exception $e): Response
+    {
+        $response = new Response();
+        $response->setStatusCode((int)$e->getCode(), $e->getMessage());
+        $response->data = [
+            'code' => $e->getCode(),
+            'message' => $e->getMessage(),
+        ];
+
+        return $response;
     }
 
     /**
