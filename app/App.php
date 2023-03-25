@@ -13,6 +13,7 @@ final class App
 {
     public static Request $request;
     public static Response $response;
+    public static array $params;
 
     private Router $router;
 
@@ -38,6 +39,14 @@ final class App
         } finally {
             $this->sendResponse($response);
         }
+    }
+
+    /**
+     * @return void
+     */
+    private function init(): void
+    {
+        self::$params = include CONFIGS . 'main.php';
     }
 
     /**
