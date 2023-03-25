@@ -2,6 +2,8 @@
 
 namespace App\Exceptions;
 
+use App\App;
+
 /**
  * Class ClassNotFoundException
  * @package App\Exceptions
@@ -14,7 +16,7 @@ class ClassNotFoundException extends HttpException
     public function __construct(string $class)
     {
         parent::__construct(
-            self::HTTP_CODES[500] . ': Class Not Found - ' . $class,
+            self::HTTP_CODES[500] . (App::$params['debug_mode'] ? ': Class Not Found - ' . $class : ''),
             500
         );
     }

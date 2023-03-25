@@ -2,6 +2,7 @@
 
 namespace App\Base;
 
+use App\App;
 use App\Exceptions\InvalidCallException;
 use App\Exceptions\UnknownMethodException;
 use App\Exceptions\UnknownPropertyException;
@@ -111,6 +112,6 @@ class BaseObject
      */
     public function __call(string $name, array $params): mixed
     {
-        throw new UnknownMethodException('Calling unknown method: ' . get_class($this) . "::$name()");
+        throw new UnknownMethodException(App::$params['debug_mode'] ? 'Calling unknown method: ' . get_class($this) . "::$name()" : '');
     }
 }
