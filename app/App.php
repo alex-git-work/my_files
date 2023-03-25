@@ -3,6 +3,7 @@
 namespace App;
 
 use Exception;
+use JetBrains\PhpStorm\NoReturn;
 
 /**
  * Class App
@@ -10,6 +11,9 @@ use Exception;
  */
 final class App
 {
+    public static Request $request;
+    public static Response $response;
+
     private Router $router;
 
     /**
@@ -26,10 +30,40 @@ final class App
     public function run(): void
     {
         try {
-            $this->router->dispatch();
+            $response = $this->router->dispatch();
+            $response->setStatusCode(200);
+            $response->addData(['code' => 200]);
         } catch (Exception $e) {
-            http_response_code($e->getCode());
-            echo $e->getMessage();
+            $response = $this->getErrorResponse($e);
+        } finally {
+            $this->sendResponse($response);
         }
+    }
+
+    /**
+     * @param Exception $e
+     * @return Response
+     */
+    private function getErrorResponse(Exception $e): Response
+    {
+        $response = new Response();
+        $response->setStatusCode((int)$e->getCode(), $e->getMessage());
+        $response->data = [
+            'code' => $e->getCode(),
+            'message' => $e->getMessage(),
+        ];
+
+        return $response;
+    }
+
+    /**
+     * @param Response $response
+     * @return void
+     */
+    #[NoReturn] private function sendResponse(Response $response): void
+    {
+        $response->setHeader('Cache-Control', 'no-cache, must-revalidate');
+        $response->setHeader('Content-Type', 'application/json; charset=utf-8');
+        $response->send();
     }
 }

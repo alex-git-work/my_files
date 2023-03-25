@@ -60,10 +60,10 @@ final class Route extends BaseObject
 
     /**
      * @param string $uri
-     * @return mixed
+     * @return Response
      * @throws ClassNotFoundException
      */
-    public function run(string $uri): mixed
+    public function run(string $uri): Response
     {
         return $this->call($uri);
     }
@@ -78,10 +78,10 @@ final class Route extends BaseObject
 
     /**
      * @param string $uri
-     * @return mixed
+     * @return Response
      * @throws ClassNotFoundException
      */
-    private function call(string $uri): mixed
+    private function call(string $uri): Response
     {
         if (!class_exists($this->controller)) {
             throw new ClassNotFoundException($this->controller);
