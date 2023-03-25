@@ -23,6 +23,7 @@ final class App
     public function __construct(Router $router)
     {
         $this->router = $router;
+        $this->init();
     }
 
     /**
