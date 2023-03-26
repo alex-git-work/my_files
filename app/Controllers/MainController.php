@@ -41,7 +41,7 @@ class MainController extends Controller
             throw new NotFoundException('User not found');
         }
 
-        return $this->asJson(['user' => $user]);
+        return $this->asJson(['user' => $user->attributes]);
     }
 
     /**
@@ -50,7 +50,10 @@ class MainController extends Controller
     public function users(): Response
     {
         $users = User::findAll(['id' => [1, 3]]);
-        return $this->asJson(['users' => $users]);
+
+        return $this->asJson([
+            'users' => $users ? array_map(fn(User $u) => $u->attributes, $users) : $users
+        ]);
     }
 
     /**

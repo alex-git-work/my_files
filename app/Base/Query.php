@@ -21,12 +21,12 @@ class Query extends BaseObject
     }
 
     /**
-     * $condition: @param int|string|array $condition
+     * $condition: @see queryParams()
      *
-     * @return array
-     * @see queryParams()
+     * @param int|string|array $condition
+     * @return static|null
      */
-    public static function findOne(int|string|array $condition = []): array
+    public static function findOne(int|string|array $condition = []): ?static
     {
         if (is_array($condition)) {
             $data = self::queryParams($condition);
@@ -37,7 +37,13 @@ class Query extends BaseObject
             $params = [':id' => $condition];
         }
 
-        return App::$db->createCommand($sql, $params);
+        $attributes = App::$db->createCommand($sql, $params);
+
+        if (empty($attributes)) {
+            return null;
+        }
+
+        return new static($attributes);
     }
 
     /**
@@ -49,8 +55,9 @@ class Query extends BaseObject
     public static function findAll(array $condition = []): array
     {
         $data = self::queryParams($condition);
+        $rows = App::$db->createCommand($data['sql'], $data['params'], Connection::FETCH_ALL);
 
-        return App::$db->createCommand($data['sql'], $data['params'], Connection::FETCH_ALL);
+        return self::createModels($rows);
     }
 
     /**
@@ -123,5 +130,25 @@ class Query extends BaseObject
         }
 
         return ['sql' => $sql, 'params' => $params];
+    }
+
+    /**
+     * @param $rows
+     * @return array
+     */
+    protected static function createModels($rows): array
+    {
+        if (empty($rows)) {
+            return [];
+        }
+
+        $models = [];
+
+        foreach ($rows as $attribute) {
+            $model = new static($attribute);
+            $models[] = $model;
+        }
+
+        return $models;
     }
 }
