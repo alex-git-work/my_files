@@ -19,6 +19,9 @@ final class Connection
 
     private PDO $pdo;
 
+    public const FETCH_ONE = 'one';
+    public const FETCH_ALL = 'all';
+
     /**
      * @param array $params
      * @throws DbException
@@ -31,6 +34,29 @@ final class Connection
         $this->options = $params['options'];
 
         $this->open();
+    }
+
+    /**
+     * @param string $sql
+     * @param array $params
+     * @param string $fetch
+     * @return array
+     */
+    public function createCommand(string $sql, array $params = [], string $fetch = self::FETCH_ONE): array
+    {
+        $stmt = $this->pdo->prepare($sql);
+
+        if ($params) {
+            foreach ($params as $param => $value) {
+                $type = $this->getPdoType($value);
+                $stmt->bindValue($param, $value, $type);
+            }
+        }
+
+        $stmt->execute();
+        $data = $fetch === self::FETCH_ONE ? $stmt->fetch() : $stmt->fetchAll();
+
+        return $data ?: [];
     }
 
     /**
@@ -52,5 +78,24 @@ final class Connection
     private function createPdoInstance(): PDO
     {
         return new PDO($this->dsn, $this->username, $this->password, $this->options);
+    }
+
+    /**
+     * @param $data
+     * @return int
+     */
+    private function getPdoType($data): int
+    {
+        static $typeMap = [
+            // php type => PDO type
+            'boolean' => PDO::PARAM_BOOL,
+            'integer' => PDO::PARAM_INT,
+            'string' => PDO::PARAM_STR,
+            'resource' => PDO::PARAM_LOB,
+            'NULL' => PDO::PARAM_NULL,
+        ];
+        $type = gettype($data);
+
+        return $typeMap[$type] ?? PDO::PARAM_STR;
     }
 }

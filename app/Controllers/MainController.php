@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\App;
 use App\Base\Controller;
 use App\Response;
 
@@ -16,8 +17,12 @@ class MainController extends Controller
      */
     public function index(): Response
     {
+        $sql = 'SELECT COUNT(*) AS count FROM users';
+        $qty = App::$db->createCommand($sql);
+
         return $this->asJson([
-            'message' => 'Hello World!'
+            'message' => 'Hello World!',
+            'users' => $qty,
         ]);
     }
 
