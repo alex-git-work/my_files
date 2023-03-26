@@ -6,7 +6,7 @@ namespace App\Base;
  * Class Model
  * @package App\Base
  */
-class Model extends BaseObject
+class Model extends Query
 {
 
 }

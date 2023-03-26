@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\App;
 use App\Base\Controller;
+use App\Exceptions\NotFoundException;
+use App\Models\User;
 use App\Response;
 
 /**
@@ -29,12 +31,26 @@ class MainController extends Controller
     /**
      * @param int $id
      * @return Response
+     * @throws NotFoundException
      */
     public function user(int $id): Response
     {
-        return $this->asJson([
-            'message' => 'You are trying to find user with id: ' . $id
-        ]);
+        $user = User::findOne($id);
+
+        if (!$user) {
+            throw new NotFoundException('User not found');
+        }
+
+        return $this->asJson(['user' => $user]);
+    }
+
+    /**
+     * @return Response
+     */
+    public function users(): Response
+    {
+        $users = User::findAll(['id' => [1, 3]]);
+        return $this->asJson(['users' => $users]);
     }
 
     /**
