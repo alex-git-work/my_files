@@ -9,6 +9,7 @@ return [
     */
 
     'debug_mode' => false,
+    'show_queries' => false,
     'encoding' => '',
 
 

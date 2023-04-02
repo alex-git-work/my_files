@@ -11,6 +11,7 @@ return [
     */
 
     'debug_mode' => true,
+    'show_queries' => true,
     'encoding' => 'UTF-8',
 
 

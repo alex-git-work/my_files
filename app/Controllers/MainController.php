@@ -20,7 +20,7 @@ class MainController extends Controller
     public function index(): Response
     {
         $sql = 'SELECT COUNT(*) AS count FROM users';
-        $qty = App::$db->createCommand($sql);
+        $qty = App::$db->createCommand($sql)->query();
 
         return $this->asJson([
             'message' => 'Hello World!',

@@ -16,18 +16,5 @@ use App\Base\Model;
  */
 class User extends Model
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function attributes(): array
-    {
-        return [
-            'id',
-            'name',
-            'email',
-            'active',
-            'admin',
-            'last_login',
-        ];
-    }
+
 }

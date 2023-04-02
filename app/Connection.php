@@ -2,47 +2,39 @@
 
 namespace App;
 
+use App\Base\BaseObject;
 use App\Exceptions\DbException;
 use PDO;
 use PDOException;
+use PDOStatement;
 
 /**
  * Class Connection
  * @package App
+ *
+ * @property-read Schema $schema
+ * @property-read string $name
+ * @property-read string $lastInsertID
  */
-final class Connection
+final class Connection extends BaseObject
 {
+    public PDO $pdo;
+    public array $queryLog = [];
+
     private string $dsn;
     private string $username;
     private string $password;
     private array $options;
 
-    private PDO $pdo;
-
-    public const FETCH_ONE = 'one';
-    public const FETCH_ALL = 'all';
-
-    /**
-     * @param array $params
-     * @throws DbException
-     */
-    public function __construct(array $params)
-    {
-        $this->dsn = $params['dsn'];
-        $this->username = $params['db_user'];
-        $this->password = $params['db_password'];
-        $this->options = $params['options'];
-
-        $this->open();
-    }
+    private ?Schema $_schema = null;
+    private ?PDOStatement $_stmt = null;
 
     /**
      * @param string $sql
      * @param array $params
-     * @param string $fetch
-     * @return array
+     * @return Connection
      */
-    public function createCommand(string $sql, array $params = [], string $fetch = self::FETCH_ONE): array
+    public function createCommand(string $sql, array $params = []): Connection
     {
         $stmt = $this->pdo->prepare($sql);
 
@@ -54,9 +46,81 @@ final class Connection
         }
 
         $stmt->execute();
-        $data = $fetch === self::FETCH_ONE ? $stmt->fetch() : $stmt->fetchAll();
 
-        return $data ?: [];
+        $this->_stmt = $stmt;
+        $this->queryLog[] = $stmt->queryString;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function query(): mixed
+    {
+        return $this->_stmt->fetch();
+    }
+
+    /**
+     * @return bool|array
+     */
+    public function queryAll(): bool|array
+    {
+        return $this->_stmt->fetchAll();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function queryColumn(): mixed
+    {
+        return $this->_stmt->fetchColumn();
+    }
+
+    /**
+     * @param array $params
+     * @param array $config
+     * @throws DbException
+     */
+    public function __construct(array $params, array $config = [])
+    {
+        $this->dsn = $params['dsn'];
+        $this->username = $params['db_user'];
+        $this->password = $params['db_password'];
+        $this->options = $params['options'];
+
+        $this->open();
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @return Schema
+     */
+    public function getSchema(): Schema
+    {
+        if ($this->_schema === null) {
+            $this->_schema = new Schema($this);
+        }
+
+        return $this->_schema;
+    }
+
+    /**
+     * @param string $name
+     * @return string|false
+     */
+    public function getLastInsertID(string $name = ''): string|false
+    {
+        return $this->pdo->lastInsertId($name === '' ? null : $name);
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return params('db_name');
     }
 
     /**

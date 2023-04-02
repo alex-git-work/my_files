@@ -3,7 +3,6 @@
 namespace App\Base;
 
 use App\App;
-use App\Connection;
 use App\Helpers\StringHelper;
 
 /**
@@ -37,7 +36,7 @@ class Query extends BaseObject
             $params = [':id' => $condition];
         }
 
-        $attributes = App::$db->createCommand($sql, $params);
+        $attributes = App::$db->createCommand($sql, $params)->query();
 
         if (empty($attributes)) {
             return null;
@@ -55,7 +54,7 @@ class Query extends BaseObject
     public static function findAll(array $condition = []): array
     {
         $data = self::queryParams($condition);
-        $rows = App::$db->createCommand($data['sql'], $data['params'], Connection::FETCH_ALL);
+        $rows = App::$db->createCommand($data['sql'], $data['params'])->queryAll();
 
         return self::createModels($rows);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Base;
 
+use App\App;
 use App\Exceptions\InvalidCallException;
 use App\Exceptions\UnknownPropertyException;
 use Exception;
@@ -22,6 +23,7 @@ class Model extends Query
 
     /**
      * @param array $config
+     * @throws Exception
      */
     public function __construct(array $config = [])
     {
@@ -50,6 +52,7 @@ class Model extends Query
      * @return void
      * @throws InvalidCallException
      * @throws UnknownPropertyException
+     * @throws Exception
      */
     public function __set($name, $value): void
     {
@@ -76,6 +79,7 @@ class Model extends Query
     /**
      * @param string $name the property name
      * @throws InvalidCallException
+     * @throws Exception
      */
     public function __unset($name): void
     {
@@ -87,17 +91,19 @@ class Model extends Query
     }
 
     /**
-     * @return array all public non-static properties of the class
+     * @return array
+     * @throws Exception
      */
     public function attributes(): array
     {
-        return [];
+        return App::$db->schema->getColumns(self::tableName());
     }
 
     /**
      * @param $names
      * @param array $except
      * @return array
+     * @throws Exception
      */
     public function getAttributes($names = null, array $except = []): array
     {
@@ -118,6 +124,7 @@ class Model extends Query
     /**
      * @param $values
      * @return void
+     * @throws Exception
      */
     public function setAttributes($values): void
     {
@@ -134,6 +141,7 @@ class Model extends Query
     /**
      * @param string $name
      * @return bool
+     * @throws Exception
      */
     public function hasAttribute(string $name): bool
     {
@@ -151,6 +159,7 @@ class Model extends Query
     /**
      * @param $value
      * @return void
+     * @throws Exception
      */
     protected function loadDefaultValues($value = null): void
     {
