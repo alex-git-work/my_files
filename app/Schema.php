@@ -2,7 +2,6 @@
 
 namespace App;
 
-use App\Exceptions\InvalidConfigException;
 use Exception;
 use PDOException;
 
@@ -39,7 +38,6 @@ final class Schema
     /**
      * @param string $table
      * @return array
-     * @throws Exception
      */
     public function getColumns(string $table): array
     {
@@ -47,16 +45,11 @@ final class Schema
             $this->setColumns();
         }
 
-        if (!isset($this->columns[$table])) {
-            throw new InvalidConfigException('Table `' . $table . '` does not exists');
-        }
-
-        return $this->columns[$table];
+        return $this->columns[$table] ?? [];
     }
 
     /**
      * @return void
-     * @throws Exception
      */
     private function setColumns(): void
     {
@@ -85,11 +78,11 @@ final class Schema
     /**
      * @param string $table
      * @return array
-     * @throws Exception
      */
     private function findColumns(string $table): array
     {
         $sql = 'SHOW FULL COLUMNS FROM ' . $table;
+        $columns = [];
 
         try {
             $columns = $this->db->createCommand($sql)->queryAll();
@@ -99,7 +92,6 @@ final class Schema
                 #table does not exist
                 return [];
             }
-            throw $e;
         }
 
         return array_column($columns, 'Field');

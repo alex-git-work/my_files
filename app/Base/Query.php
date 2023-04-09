@@ -49,7 +49,7 @@ class Query extends BaseObject
      * $condition: @see queryParams()
      *
      * @param array $condition
-     * @return array
+     * @return static[]
      */
     public static function findAll(array $condition = []): array
     {
@@ -57,6 +57,67 @@ class Query extends BaseObject
         $rows = App::$db->createCommand($data['sql'], $data['params'])->queryAll();
 
         return self::createModels($rows);
+    }
+
+    /**
+     * @param array $columns
+     * @param array $values
+     * @return string|false
+     */
+    public static function create(array $columns, array $values): string|false
+    {
+        array_shift($columns);
+        array_shift($values);
+
+        $placeHolders = array_map(fn($v) => ':' . $v, $columns);
+
+        $sql = 'INSERT INTO ' . self::tableName() . ' (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $placeHolders) . ')';
+        $params = array_combine($placeHolders, $values);
+
+        App::$db->createCommand($sql, $params)->query();
+
+        return App::$db->lastInsertID;
+    }
+
+    /**
+     * @param array $columns
+     * @param array $values
+     * @return int
+     */
+    public static function update(array $columns, array $values): int
+    {
+        array_shift($columns);
+        $id = array_shift($values);
+        $placeHolders = array_map(fn($v) => ':' . $v, $columns);
+        $insert = array_combine($columns, $placeHolders);
+        $params = '';
+
+        foreach ($insert as $param => $value) {
+            $params .= $param . ' = ' . $value . ', ';
+        }
+
+        $params = substr($params, 0, -2);
+
+        $sql = 'UPDATE ' . self::tableName() . ' SET ' . $params . ' WHERE id = :id';
+        $params = array_merge([':id' => $id], array_combine($placeHolders, $values));
+
+        App::$db->createCommand($sql, $params)->query();
+
+        return App::$db->countRows;
+    }
+
+    /**
+     * @param int $id
+     * @return int
+     */
+    public static function destroy(int $id): int
+    {
+        $sql = 'DELETE FROM ' . self::tableName() . ' WHERE id = :id';
+        $params = [':id' => $id];
+
+        App::$db->createCommand($sql, $params)->query();
+
+        return App::$db->countRows;
     }
 
     /**

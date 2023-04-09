@@ -4,6 +4,7 @@ namespace App\Base;
 
 use App\App;
 use App\Exceptions\InvalidCallException;
+use App\Exceptions\InvalidConfigException;
 use App\Exceptions\UnknownPropertyException;
 use Exception;
 use Throwable;
@@ -13,8 +14,8 @@ use Throwable;
  * @package App\Base
  *
  * @property array $attributes Attribute values (name => value).
- *
- * @property-read bool $isNewRecord Whether the record is new
+ * @property array $oldAttributes Old attribute values (name => value).
+ * @property bool $isNewRecord Whether the record is new
  */
 class Model extends Query
 {
@@ -23,7 +24,6 @@ class Model extends Query
 
     /**
      * @param array $config
-     * @throws Exception
      */
     public function __construct(array $config = [])
     {
@@ -32,12 +32,20 @@ class Model extends Query
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function init(): void
+    {
+        $this->isNewRecord = $this->getAttribute('id') === null;
+    }
+
+    /**
      * @param string $name property name
      * @return mixed property value
      * @throws InvalidCallException
      * @throws UnknownPropertyException
      */
-    public function __get($name): mixed
+    public function __get(string $name): mixed
     {
         if (isset($this->_attributes[$name]) || array_key_exists($name, $this->_attributes)) {
             return $this->_attributes[$name];
@@ -52,9 +60,8 @@ class Model extends Query
      * @return void
      * @throws InvalidCallException
      * @throws UnknownPropertyException
-     * @throws Exception
      */
-    public function __set($name, $value): void
+    public function __set(string $name, $value): void
     {
         if ($this->hasAttribute($name)) {
             $this->_attributes[$name] = $value;
@@ -64,10 +71,10 @@ class Model extends Query
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @return bool
      */
-    public function __isset($name): bool
+    public function __isset(string $name): bool
     {
         try {
             return $this->__get($name) !== null;
@@ -77,11 +84,11 @@ class Model extends Query
     }
 
     /**
-     * @param string $name the property name
+     * @param string $name
+     * @return void
      * @throws InvalidCallException
-     * @throws Exception
      */
-    public function __unset($name): void
+    public function __unset(string $name): void
     {
         if ($this->hasAttribute($name)) {
             unset($this->_attributes[$name]);
@@ -92,7 +99,6 @@ class Model extends Query
 
     /**
      * @return array
-     * @throws Exception
      */
     public function attributes(): array
     {
@@ -100,15 +106,38 @@ class Model extends Query
     }
 
     /**
-     * @param $names
+     * @param string $name
+     * @return mixed|null
+     */
+    public function getAttribute(string $name): mixed
+    {
+        return $this->_attributes[$name] ?? null;
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @return void
+     * @throws InvalidConfigException
+     */
+    public function setAttribute(string $name, mixed $value): void
+    {
+        if ($this->hasAttribute($name)) {
+            $this->_attributes[$name] = $value;
+        } else {
+            throw new InvalidConfigException(get_class($this) . ' has no attribute named "' . $name . '".');
+        }
+    }
+
+    /**
+     * @param array $names
      * @param array $except
      * @return array
-     * @throws Exception
      */
-    public function getAttributes($names = null, array $except = []): array
+    public function getAttributes(array $names = [], array $except = []): array
     {
         $values = [];
-        if ($names === null) {
+        if (!$names) {
             $names = $this->attributes();
         }
         foreach ($names as $name) {
@@ -124,7 +153,6 @@ class Model extends Query
     /**
      * @param $values
      * @return void
-     * @throws Exception
      */
     public function setAttributes($values): void
     {
@@ -139,9 +167,25 @@ class Model extends Query
     }
 
     /**
+     * @return array
+     */
+    public function getOldAttributes(): array
+    {
+        return $this->_oldAttributes === null ? [] : $this->_oldAttributes;
+    }
+
+    /**
+     * @param array|null $values
+     * @return void
+     */
+    public function setOldAttributes(?array $values): void
+    {
+        $this->_oldAttributes = $values;
+    }
+
+    /**
      * @param string $name
      * @return bool
-     * @throws Exception
      */
     public function hasAttribute(string $name): bool
     {
@@ -157,14 +201,80 @@ class Model extends Query
     }
 
     /**
+     * @param bool $value
+     * @return void
+     */
+    public function setIsNewRecord(bool $value): void
+    {
+        $this->_oldAttributes = $value ? null : $this->_attributes;
+    }
+
+    /**
+     * @return bool
+     */
+    public function save(): bool
+    {
+        if ($this->isNewRecord) {
+            $id = self::create($this->attributes(), array_values($this->attributes));
+
+            if ($id !== false) {
+                $this->isNewRecord = false;
+                $this->_oldAttributes = $this->attributes;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        return self::update($this->attributes(), array_values($this->attributes));
+    }
+
+    /**
+     * @return bool
+     */
+    public function delete(): bool
+    {
+        $this->setOldAttributes(null);
+
+        return self::destroy($this->getAttribute('id'));
+    }
+
+    /**
+     * @return bool
+     */
+    public function refresh(): bool
+    {
+        $record = static::findOne(App::$db->lastInsertID);
+
+        return $this->refreshInternal($record);
+    }
+
+    /**
      * @param $value
      * @return void
-     * @throws Exception
      */
     protected function loadDefaultValues($value = null): void
     {
         foreach ($this->attributes() as $attribute) {
             $this->_attributes[$attribute] = $value;
         }
+    }
+
+    /**
+     * @param Model|null $record
+     * @return bool
+     */
+    protected function refreshInternal(?Model $record): bool
+    {
+        if ($record === null) {
+            return false;
+        }
+        foreach ($this->attributes() as $name) {
+            $this->_attributes[$name] = $record->_attributes[$name] ?? null;
+        }
+        $this->_oldAttributes = $record->_oldAttributes;
+
+        return true;
     }
 }

@@ -14,7 +14,8 @@ use PDOStatement;
  *
  * @property-read Schema $schema
  * @property-read string $name
- * @property-read string $lastInsertID
+ * @property-read string|false $lastInsertID
+ * @property-read int $countRows
  */
 final class Connection extends BaseObject
 {
@@ -113,6 +114,14 @@ final class Connection extends BaseObject
     public function getLastInsertID(string $name = ''): string|false
     {
         return $this->pdo->lastInsertId($name === '' ? null : $name);
+    }
+
+    /**
+     * @return int
+     */
+    public function getCountRows(): int
+    {
+        return $this->_stmt->rowCount();
     }
 
     /**

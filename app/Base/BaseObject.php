@@ -35,12 +35,12 @@ class BaseObject
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @return mixed
      * @throws InvalidCallException
      * @throws UnknownPropertyException
      */
-    public function __get($name): mixed
+    public function __get(string $name): mixed
     {
         $getter = 'get' . $name;
 
@@ -54,13 +54,13 @@ class BaseObject
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @param $value
      * @return void
      * @throws InvalidCallException
      * @throws UnknownPropertyException
      */
-    public function __set($name, $value): void
+    public function __set(string $name, $value): void
     {
         $setter = 'set' . $name;
 
@@ -74,10 +74,10 @@ class BaseObject
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @return bool
      */
-    public function __isset($name): bool
+    public function __isset(string $name): bool
     {
         $getter = 'get' . $name;
 
@@ -89,11 +89,11 @@ class BaseObject
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @return void
      * @throws InvalidCallException
      */
-    public function __unset($name): void
+    public function __unset(string $name): void
     {
         $setter = 'set' . $name;
 
