@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Exceptions\DbException;
 use Exception;
 use JetBrains\PhpStorm\NoReturn;
 
@@ -13,6 +14,7 @@ final class App
 {
     public static Request $request;
     public static Response $response;
+    public static Connection $db;
     public static array $params;
 
     private Router $router;
@@ -23,7 +25,13 @@ final class App
     public function __construct(Router $router)
     {
         $this->router = $router;
-        $this->init();
+
+        try {
+            $this->init();
+        } catch (Exception $e) {
+            $response = $this->getErrorResponse($e);
+            $this->sendResponse($response);
+        }
     }
 
     /**
@@ -35,6 +43,10 @@ final class App
             $response = $this->router->dispatch();
             $response->setStatusCode(200);
             $response->addData(['code' => 200]);
+
+            if (self::$params['show_queries']) {
+                $response->addData(['queries' => self::$db->queryLog]);
+            }
         } catch (Exception $e) {
             $response = $this->getErrorResponse($e);
         } finally {
@@ -44,9 +56,12 @@ final class App
 
     /**
      * @return void
+     * @throws DbException
      */
     private function init(): void
     {
+        $config = include CONFIGS . 'db.php';
+        self::$db = new Connection($config);
         self::$params = include CONFIGS . 'main.php';
     }
 
