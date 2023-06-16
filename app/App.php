@@ -41,8 +41,7 @@ final class App
     {
         try {
             $response = $this->router->dispatch();
-            $response->setStatusCode(200);
-            $response->addData(['code' => 200]);
+            $response->addData(['code' => $response->statusCode]);
 
             if (self::$params['show_queries']) {
                 $response->addData(['queries' => self::$db->queryLog]);

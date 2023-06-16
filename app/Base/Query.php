@@ -32,7 +32,7 @@ class Query extends BaseObject
             $sql = $data['sql'];
             $params = $data['params'];
         } else {
-            $sql = 'SELECT * FROM ' . self::tableName() . ' WHERE id = :id';
+            $sql = 'SELECT * FROM ' . static::tableName() . ' WHERE id = :id';
             $params = [':id' => $condition];
         }
 
@@ -70,8 +70,9 @@ class Query extends BaseObject
         array_shift($values);
 
         $placeHolders = array_map(fn($v) => ':' . $v, $columns);
+        $columns = array_map(fn($v) => '`' . $v . '`', $columns);
 
-        $sql = 'INSERT INTO ' . self::tableName() . ' (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $placeHolders) . ')';
+        $sql = 'INSERT INTO ' . static::tableName() . ' (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $placeHolders) . ')';
         $params = array_combine($placeHolders, $values);
 
         App::$db->createCommand($sql, $params)->query();
@@ -89,6 +90,7 @@ class Query extends BaseObject
         array_shift($columns);
         $id = array_shift($values);
         $placeHolders = array_map(fn($v) => ':' . $v, $columns);
+        $columns = array_map(fn($v) => '`' . $v . '`', $columns);
         $insert = array_combine($columns, $placeHolders);
         $params = '';
 
@@ -98,7 +100,7 @@ class Query extends BaseObject
 
         $params = substr($params, 0, -2);
 
-        $sql = 'UPDATE ' . self::tableName() . ' SET ' . $params . ' WHERE id = :id';
+        $sql = 'UPDATE ' . static::tableName() . ' SET ' . $params . ' WHERE id = :id';
         $params = array_merge([':id' => $id], array_combine($placeHolders, $values));
 
         App::$db->createCommand($sql, $params)->query();
@@ -112,7 +114,7 @@ class Query extends BaseObject
      */
     public static function destroy(int $id): int
     {
-        $sql = 'DELETE FROM ' . self::tableName() . ' WHERE id = :id';
+        $sql = 'DELETE FROM ' . static::tableName() . ' WHERE id = :id';
         $params = [':id' => $id];
 
         App::$db->createCommand($sql, $params)->query();
@@ -154,29 +156,29 @@ class Query extends BaseObject
                 if (is_int($key)) {
                     if (count($value) === 1) {
                         foreach ($value as $c => $v) {
-                            $where .= $c . ' = :' . $c . ' AND ';
+                            $where .= '`' . $c . '` = :' . $c . ' AND ';
                             $params[':' . $c] = $v;
                         }
                     } else {
                         list($c, $o, $v) = $value;
                         if (is_array($v)) {
                             $placeHolders = implode(', ', array_fill(0, count($v), '?'));
-                            $where .= $c . ' ' . strtoupper($o) . ' (' . $placeHolders . ') AND ';
+                            $where .= '`' . $c . '` ' . strtoupper($o) . ' (' . $placeHolders . ') AND ';
                             $params = array_combine(array_map(fn($key) => $key + 1, array_keys($v)), $v);
                         } else {
                             if ($v === null) {
                                 $v = 'NULL';
                             }
-                            $where .= $c . ' ' . strtoupper($o) . ' ' . $v . ' AND ';
+                            $where .= '`' . $c . '` ' . strtoupper($o) . ' ' . $v . ' AND ';
                         }
                     }
                 } else {
                     if (is_array($value)) {
                         $placeHolders = implode(', ', array_fill(0, count($value), '?'));
-                        $where .= $key . ' IN (' . $placeHolders . ') AND ';
+                        $where .= '`' . $key . '` IN (' . $placeHolders . ') AND ';
                         $params = array_combine(array_map(fn($key) => $key + 1, array_keys($value)), $value);
                     } else {
-                        $where .= $key . ' = :' . $key . ' AND ';
+                        $where .= '`' . $key . '` = :' . $key . ' AND ';
                         $params[':' . $key] = $value;
                     }
                 }
@@ -184,9 +186,9 @@ class Query extends BaseObject
 
             $where = substr($where, 0, -5);
 
-            $sql = 'SELECT * FROM ' . self::tableName() . $where;
+            $sql = 'SELECT * FROM ' . static::tableName() . $where;
         } else {
-            $sql = 'SELECT * FROM ' . self::tableName();
+            $sql = 'SELECT * FROM ' . static::tableName();
         }
 
         return ['sql' => $sql, 'params' => $params];

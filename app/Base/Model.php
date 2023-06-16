@@ -102,7 +102,7 @@ class Model extends Query
      */
     public function attributes(): array
     {
-        return App::$db->schema->getColumns(self::tableName());
+        return App::$db->schema->getColumns(static::tableName());
     }
 
     /**
