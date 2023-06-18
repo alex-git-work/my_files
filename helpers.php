@@ -35,3 +35,15 @@ if (!function_exists('params')) {
         return ArrayHelper::get($params, $key, $default);
     }
 }
+
+if (!function_exists('now')) {
+    /**
+     * Return current date time
+     *
+     * @return mixed
+     */
+    function now(): string
+    {
+        return date('Y-m-d H:i:s');
+    }
+}

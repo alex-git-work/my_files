@@ -1,5 +1,7 @@
 <?php
 
-return [
+use App\Controllers\UserController;
 
+return [
+    '/user/*' => [UserController::class, 'edit'],
 ];
