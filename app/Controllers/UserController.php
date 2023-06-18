@@ -32,8 +32,10 @@ class UserController extends Controller
     {
         $users = User::findAll();
 
+        $usersInfo = array_map(fn(User $u) => $u->getAttributes(['name', 'email', 'created_at']), $users);
+
         return $this->asJson([
-            'users' => $users ? array_map(fn(User $u) => $u->getAttributes(except: ['password']), $users) : $users
+            'users' => $users ? $usersInfo : $users
         ]);
     }
 
@@ -91,7 +93,9 @@ class UserController extends Controller
     {
         $user = $this->findModel($id);
 
-        return $this->asJson(['user' => $user->attributes]);
+        return $this->asJson([
+            'user' => $user->getAttributes(['name', 'email', 'created_at'])
+        ]);
     }
 
     /**
