@@ -10,9 +10,12 @@ return [
     |
     */
 
+    'main_url' => 'http://files.lcl',
     'debug_mode' => true,
     'show_queries' => true,
     'encoding' => 'UTF-8',
+    'token_ttl' => 10,
+    'email' => 'info@files.lcl',
 
 
     /*

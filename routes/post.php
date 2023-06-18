@@ -1,8 +1,7 @@
 <?php
 
-use App\Controllers\MainController;
+use App\Controllers\UserController;
 
 return [
-    '/update' => [MainController::class, 'update'],
-    '/users' => [MainController::class, 'users'],
+    '/user' => [UserController::class, 'create'],
 ];

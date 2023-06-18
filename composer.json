@@ -6,7 +6,8 @@
       "App\\Controllers\\": "app/Controllers",
       "App\\Exceptions\\": "app/Exceptions",
       "App\\Helpers\\": "app/Helpers",
-      "App\\Models\\": "app/Models"
+      "App\\Models\\": "app/Models",
+      "App\\Validators\\": "app/Validators"
     }
   },
   "require": {

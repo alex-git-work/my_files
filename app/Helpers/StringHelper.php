@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\App;
+use Exception;
 
 /**
  * Class StringHelper
@@ -54,5 +55,32 @@ class StringHelper
         }
 
         return mb_strtolower(trim(str_replace('_', $separator, preg_replace($regex, $separator . '\0', $name)), $separator), App::$params['encoding']);
+    }
+
+    /**
+     * @param int $length
+     * @return string
+     * @throws Exception
+     */
+    public static function generateRandomString(int $length): string
+    {
+        $chars = '0123456789abcdef';
+        $string = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $start = random_int(1, strlen($chars) - 1);
+            $string .= substr($chars, $start, 1);
+        }
+
+        return $string;
+    }
+
+    /**
+     * @return string
+     * @throws Exception
+     */
+    public static function generateToken(): string
+    {
+        return self::generateRandomString(32);
     }
 }

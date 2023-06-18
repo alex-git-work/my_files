@@ -16,6 +16,9 @@ use App\Base\BaseObject;
  * @property-read bool $isGet
  * @property-read bool $isPost
  * @property-read string $method
+ * @property-read string|null $email
+ * @property-read string|null $password
+ * @property-read string|null $bearerToken
  */
 final class Request extends BaseObject
 {
@@ -206,5 +209,41 @@ final class Request extends BaseObject
     public function setRawBody(?string $rawBody): void
     {
         $this->rawBody = $rawBody;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEmail(): ?string
+    {
+        return $_SERVER['PHP_AUTH_USER'] ?? null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPassword(): ?string
+    {
+        return $_SERVER['PHP_AUTH_PW'] ?? null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBearerToken(): ?string
+    {
+        $header = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+
+        if (!$header) {
+            return null;
+        }
+
+        $token = null;
+
+        if (str_starts_with($_SERVER['HTTP_AUTHORIZATION'], 'Bearer ')) {
+            $token = substr($header, 7);
+        }
+
+        return $token;
     }
 }

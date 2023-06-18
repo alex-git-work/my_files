@@ -8,9 +8,12 @@ return [
     |
     */
 
+    'main_url' => '',
     'debug_mode' => false,
     'show_queries' => false,
     'encoding' => '',
+    'token_ttl' => 0,
+    'email' => '',
 
 
     /*
