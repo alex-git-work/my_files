@@ -17,7 +17,7 @@ class StringHelper
      */
     public static function preparePatternFromString(string $string): string
     {
-        return '<' . str_replace('*', '[\w]+', $string) . '>';
+        return '<^' . str_replace('*', '[\w]+', $string) . '>';
     }
 
     /**
