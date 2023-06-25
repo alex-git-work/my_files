@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\AdminController;
 use App\Controllers\MainController;
 use App\Controllers\UserController;
 
@@ -11,4 +12,6 @@ return [
     '/user/logout' => [UserController::class, 'logout'],
     '/user/reset_password' => [UserController::class, 'resetPassword'],
     '/user/password_change/*' => [UserController::class, 'passwordChange'],
+    '/admin/user' => [AdminController::class, 'index'],
+    '/admin/users/*' => [AdminController::class, 'show'],
 ];

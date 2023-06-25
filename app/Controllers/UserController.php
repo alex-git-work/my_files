@@ -72,7 +72,7 @@ class UserController extends Controller
      * @return bool
      * @throws Exception
      */
-    public function store(array $data): bool
+    protected function store(array $data): bool
     {
         $user = new User($data);
         $user->password = password_hash($user->password, PASSWORD_DEFAULT);
@@ -139,7 +139,7 @@ class UserController extends Controller
      * @return bool
      * @throws NotFoundException
      */
-    public function update(int $id, array $data): bool
+    protected function update(int $id, array $data): bool
     {
         $user = $this->findModel($id);
         $user->setAttributes($data);

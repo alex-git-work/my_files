@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\App;
 use App\Exceptions\UnauthorizedException;
+use App\Models\Role;
 
 /**
  * Trait Authorization
@@ -12,14 +13,19 @@ use App\Exceptions\UnauthorizedException;
 trait Authorization
 {
     /**
+     * @param bool $forAdmin
      * @return int
      * @throws UnauthorizedException
      */
-    protected function authCheck(): int
+    protected function authCheck(bool $forAdmin = false): int
     {
         $token = $this->getToken();
 
-        $sql = 'SELECT * FROM users WHERE token = :token';
+        if ($forAdmin) {
+            $sql = 'SELECT * FROM users WHERE role_id = ' . Role::ROLE_ADMIN . ' AND token = :token';
+        } else {
+            $sql = 'SELECT * FROM users WHERE role_id = ' . Role::ROLE_USER . ' AND token = :token';
+        }
 
         $user = App::$db->createCommand($sql, [':token' => $token])->query();
 
