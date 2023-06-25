@@ -3,6 +3,7 @@
 namespace App\Validators;
 
 use App\Base\Validator;
+use App\Models\Role;
 use App\Models\User;
 
 /**
@@ -11,7 +12,7 @@ use App\Models\User;
  */
 class UserCreateValidator extends Validator
 {
-    protected array $keys = [
+    public array $keys = [
         'name',
         'email',
         'password',
@@ -31,6 +32,10 @@ class UserCreateValidator extends Validator
 
         if (isset($this->cleanData['email']) && !$this->emailUnique($this->cleanData['email'])) {
             $this->addError('email', 'Email already exists');
+        }
+
+        if (isset($this->cleanData['role_id']) && !in_array($this->cleanData['role_id'], Role::ROLES)) {
+            $this->addError('email', 'Role not found');
         }
 
         $this->end();

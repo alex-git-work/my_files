@@ -56,4 +56,12 @@ class User extends Model
 
         return strtotime($this->last_request) >= strtotime('now - ' . App::$params['token_ttl'] . ' minutes');
     }
+
+    /**
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role_id === Role::ROLE_ADMIN;
+    }
 }
