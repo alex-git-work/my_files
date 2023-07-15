@@ -62,14 +62,7 @@ class AdminController extends Controller
         }
 
         $data = App::$request->parsedBody;
-        $validator = new UserCreateValidator($data, $user->id, [
-            'keys' => [
-                'name',
-                'email',
-                'password',
-                'role_id',
-            ]
-        ]);
+        $validator = new UserCreateValidator($data, $user->id, ['keys' => array_keys($data)]);
 
         if (!$validator->validate()) {
             throw new ValidateException($validator->firstError);

@@ -8,7 +8,7 @@ use App\Models\User;
 
 /**
  * Class UserCreateValidator
- * @package App\Validators\User
+ * @package App\Validators
  */
 class UserCreateValidator extends Validator
 {

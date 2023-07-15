@@ -6,7 +6,7 @@ use App\Base\Validator;
 
 /**
  * Class UserLoginValidator
- * @package App\Validators\User
+ * @package App\Validators
  */
 class UserLoginValidator extends Validator
 {
