@@ -62,16 +62,28 @@ class AdminController extends Controller
         }
 
         $data = App::$request->parsedBody;
+
+        if (empty($data)) {
+            throw new ValidateException('Empty request');
+        }
+
         $validator = new UserCreateValidator($data, $user->id, ['keys' => array_keys($data)]);
+        $validator->isAdminSection = true;
+        $validator->setRequiredKeys([
+            'name',
+            'email',
+            'password',
+            'role_id',
+        ]);
 
         if (!$validator->validate()) {
             throw new ValidateException($validator->firstError);
         }
 
-        $userData = $validator->validatedData;
+        $attributes = $validator->validatedData;
 
-        $user->setAttributes($userData);
-        $user->password = password_hash($userData['password'], PASSWORD_DEFAULT);
+        $user->setAttributes($attributes);
+        $user->password = password_hash($attributes['password'], PASSWORD_DEFAULT);
         $user->updated_at = now();
         $user->save();
 

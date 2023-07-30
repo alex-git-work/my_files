@@ -4,18 +4,21 @@ namespace App\Controllers;
 
 use App\App;
 use App\Base\Controller;
+use App\Exceptions\HttpException;
 use App\Exceptions\InvalidConfigException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnauthorizedException;
 use App\Exceptions\ValidateException;
 use App\Helpers\StringHelper;
 use App\Models\Mail;
+use App\Models\Role;
 use App\Models\User;
 use App\Response;
 use App\Traits\Authorization;
 use App\Validators\UserCreateValidator;
 use App\Validators\UserLoginValidator;
 use Exception;
+use PDOException;
 
 /**
  * Class UserController
@@ -41,47 +44,34 @@ class UserController extends Controller
 
     /**
      * @return Response
-     * @throws InvalidConfigException
      * @throws ValidateException
-     * @throws Exception
      */
     public function create(): Response
     {
         $data = App::$request->parsedBody;
 
-        $validator = new UserCreateValidator($data);
+        if (empty($data)) {
+            throw new ValidateException('Empty request');
+        }
+
+        $validator = new UserCreateValidator($data, config: ['keys' => array_keys($data)]);
 
         if (!$validator->validate()) {
             throw new ValidateException($validator->firstError);
         }
 
-        $userData = $validator->validatedData;
+        $config = $validator->validatedData;
 
-        if (!$this->store($userData)) {
-            throw new InvalidConfigException('Something goes wrong...');
-        }
+        $user = new User($config);
+        $user->password = password_hash($user->password, PASSWORD_DEFAULT);
+        $user->role_id = Role::ROLE_USER;
+        $user->created_at = now();
+        $user->save();
 
         return $this->asJson([
             'message' => 'User created',
             'userId' => App::$db->lastInsertID,
         ]);
-    }
-
-    /**
-     * @param array $data
-     * @return bool
-     * @throws Exception
-     */
-    protected function store(array $data): bool
-    {
-        $user = new User($data);
-        $user->password = password_hash($user->password, PASSWORD_DEFAULT);
-        $user->role_id = 2;
-        $user->token = null;
-        $user->last_request = null;
-        $user->created_at = now();
-
-        return $user->save();
     }
 
     /**
@@ -101,7 +91,6 @@ class UserController extends Controller
     /**
      * @param int $id
      * @return Response
-     * @throws InvalidConfigException
      * @throws NotFoundException
      * @throws UnauthorizedException
      * @throws ValidateException
@@ -115,38 +104,29 @@ class UserController extends Controller
         }
 
         $data = App::$request->parsedBody;
-        $validator = new UserCreateValidator($data, $id);
+
+        if (empty($data)) {
+            throw new ValidateException('Empty request');
+        }
+
+        $validator = new UserCreateValidator($data, $id, ['keys' => array_keys($data)]);
 
         if (!$validator->validate()) {
             throw new ValidateException($validator->firstError);
         }
 
-        $userData = $validator->validatedData;
+        $attributes = $validator->validatedData;
 
-        if (!$this->update($id, $userData)) {
-            throw new InvalidConfigException('Something goes wrong...');
-        }
+        $user = $this->findModel($id);
+        $user->setAttributes($attributes);
+        $user->password = password_hash($data['password'], PASSWORD_DEFAULT);
+        $user->updated_at = now();
+        $user->save();
 
         return $this->asJson([
             'message' => 'User updated',
-            'userId' => $id,
+            'userId' => $user->id,
         ]);
-    }
-
-    /**
-     * @param int $id
-     * @param array $data
-     * @return bool
-     * @throws NotFoundException
-     */
-    protected function update(int $id, array $data): bool
-    {
-        $user = $this->findModel($id);
-        $user->setAttributes($data);
-        $user->password = password_hash($data['password'], PASSWORD_DEFAULT);
-        $user->updated_at = now();
-
-        return $user->save();
     }
 
     /**

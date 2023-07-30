@@ -14,11 +14,15 @@ use App\App;
  */
 class Validator extends BaseObject
 {
+    public array $except = [];
+    public array $keys = [];
+    public bool $isAdminSection = false;
+
+    protected array $requireKeys = [];
     protected array $rawData;
-    protected ?int $id;
+    protected ?int $entityId;
     protected array $cleanData = [];
     protected array $errors = [];
-    protected array $keys = [];
     protected bool $result = false;
 
     /**
@@ -29,7 +33,7 @@ class Validator extends BaseObject
     public function __construct(array $data, int $id = null, array $config = [])
     {
         $this->rawData = $data;
-        $this->id = $id;
+        $this->entityId = $id;
         parent::__construct($config);
     }
 
@@ -80,11 +84,25 @@ class Validator extends BaseObject
     }
 
     /**
+     * @param array $data
      * @return void
      */
-    protected function addCleanData(): void
+    public function setRequiredKeys(array $data): void
+    {
+        $this->requireKeys = $data;
+    }
+
+    /**
+     * @param array $except
+     * @return void
+     */
+    protected function addCleanData(array $except = []): void
     {
         foreach ($this->keys as $key) {
+            if (in_array($key, $except)) {
+                continue;
+            }
+
             $cleanValue = $this->purify($this->rawData[$key]);
 
             if (empty($cleanValue)) {
@@ -107,11 +125,21 @@ class Validator extends BaseObject
     }
 
     /**
+     * @param array $except
      * @return void
      */
-    protected function required(): void
+    protected function required(array $except = []): void
     {
+        foreach ($this->requireKeys as $key) {
+            if (!in_array($key, $this->keys)) {
+                $this->addError($key, 'Attribute [' . $key . '] is required');
+            }
+        }
+
         foreach ($this->keys as $key) {
+            if (in_array($key, $except)) {
+                continue;
+            }
             if (empty($this->rawData[$key])) {
                 $this->addError($key, 'Attribute [' . $key . '] is required');
             }
