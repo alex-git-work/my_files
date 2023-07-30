@@ -12,18 +12,29 @@ use App\Models\User;
  */
 class UserCreateValidator extends Validator
 {
-    public array $keys = [
+    protected array $requireKeys = [
         'name',
         'email',
         'password',
     ];
+
+    protected ?User $user = null;
 
     /**
      * @return bool
      */
     public function validate(): bool
     {
+        if ($this->entityId !== null) {
+            $this->user = User::findOne($this->entityId);
+        }
+
         $this->required();
+
+        if (!empty($this->errors)) {
+            return false;
+        }
+
         $this->addCleanData();
 
         if (empty($this->cleanData['email']) || !$this->email($this->cleanData['email'])) {
@@ -34,8 +45,14 @@ class UserCreateValidator extends Validator
             $this->addError('email', 'Email already exists');
         }
 
-        if (isset($this->cleanData['role_id']) && !in_array($this->cleanData['role_id'], Role::ROLES)) {
-            $this->addError('email', 'Role not found');
+        if (isset($this->cleanData['role_id'])) {
+            if ($this->user === null || !$this->isAdminSection) {
+                $this->addError('role_id', 'Unknown param role_id');
+            }
+
+            if (!in_array($this->cleanData['role_id'], Role::ROLES)) {
+                $this->addError('email', 'Role not found');
+            }
         }
 
         $this->end();
@@ -53,9 +70,8 @@ class UserCreateValidator extends Validator
      */
     public function emailUnique(string $value): bool
     {
-        if ($this->id !== null) {
-            $user = User::findOne($this->id);
-            return $user->email === $value || User::findOne(['email' => $value]) === null;
+        if ($this->user !== null) {
+            return $this->user->email === $value || User::findOne(['email' => $value]) === null;
         }
 
         return User::findOne(['email' => $value]) === null;
