@@ -63,11 +63,7 @@ class AdminController extends Controller
 
         $data = App::$request->parsedBody;
 
-        if (empty($data)) {
-            throw new ValidateException('Empty request');
-        }
-
-        $validator = new UserCreateValidator($data, $user->id, ['keys' => array_keys($data)]);
+        $validator = new UserCreateValidator($data, $user->id);
         $validator->isAdminSection = true;
         $validator->setRequiredKeys([
             'name',

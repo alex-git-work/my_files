@@ -49,12 +49,7 @@ class UserController extends Controller
     public function create(): Response
     {
         $data = App::$request->parsedBody;
-
-        if (empty($data)) {
-            throw new ValidateException('Empty request');
-        }
-
-        $validator = new UserCreateValidator($data, config: ['keys' => array_keys($data)]);
+        $validator = new UserCreateValidator($data);
 
         if (!$validator->validate()) {
             throw new ValidateException($validator->firstError);
@@ -104,12 +99,7 @@ class UserController extends Controller
         }
 
         $data = App::$request->parsedBody;
-
-        if (empty($data)) {
-            throw new ValidateException('Empty request');
-        }
-
-        $validator = new UserCreateValidator($data, $id, ['keys' => array_keys($data)]);
+        $validator = new UserCreateValidator($data, $id);
 
         if (!$validator->validate()) {
             throw new ValidateException($validator->firstError);
