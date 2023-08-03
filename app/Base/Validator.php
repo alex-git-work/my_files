@@ -3,6 +3,7 @@
 namespace App\Base;
 
 use App\App;
+use App\Exceptions\ValidateException;
 
 /**
  * Class Validator
@@ -19,22 +20,35 @@ class Validator extends BaseObject
     public bool $isAdminSection = false;
 
     protected array $requireKeys = [];
-    protected array $rawData;
+    protected ?array $rawData;
     protected ?int $entityId;
     protected array $cleanData = [];
     protected array $errors = [];
     protected bool $result = false;
 
     /**
-     * @param array $data
+     * @param array|null $data
      * @param int|null $id
      * @param array $config
      */
-    public function __construct(array $data, int $id = null, array $config = [])
+    public function __construct(?array $data, int $id = null, array $config = [])
     {
         $this->rawData = $data;
         $this->entityId = $id;
         parent::__construct($config);
+    }
+
+    /**
+     * @return void
+     * @throws ValidateException
+     */
+    public function init(): void
+    {
+        if (empty($this->rawData)) {
+            throw new ValidateException('Empty request');
+        }
+
+        $this->keys = array_keys($this->rawData);
     }
 
     /**
