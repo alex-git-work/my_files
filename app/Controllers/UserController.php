@@ -303,13 +303,27 @@ class UserController extends Controller
     }
 
     /**
-     * @param int $id
+     * @param string $email
+     * @return Response
+     * @throws NotFoundException
+     */
+    public function search(string $email): Response
+    {
+        $user = $this->findModel(['email' => $email]);
+
+        return $this->asJson([
+            'user' => $user->getAttributes(['id', 'name', 'email', 'created_at'])
+        ]);
+    }
+
+    /**
+     * @param int|array $value
      * @return User
      * @throws NotFoundException
      */
-    protected function findModel(int $id): User
+    protected function findModel(int|array $value): User
     {
-        $model = User::findOne($id);
+        $model = User::findOne($value);
 
         if ($model === null) {
             throw new NotFoundException('User not found');

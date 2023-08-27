@@ -14,9 +14,13 @@ return [
     '/user/logout' => [UserController::class, 'logout'],
     '/user/reset_password' => [UserController::class, 'resetPassword'],
     '/user/password_change/*' => [UserController::class, 'passwordChange'],
+    '/user/search/*' => [UserController::class, 'search'],
     '/admin/user' => [AdminController::class, 'index'],
     '/admin/users/*' => [AdminController::class, 'show'],
     '/file' => [FileController::class, 'index'],
+    '/file/share/*' => [FileController::class, 'sharedList'],
+    '/file/shared_for_me' => [FileController::class, 'filesSharedForMe'],
+    '/file/my_shared_files' => [FileController::class, 'mySharedFiles'],
     '/files/*' => [FileController::class, 'show'],
     '/directories/*' => [DirectoryController::class, 'show'],
 ];
