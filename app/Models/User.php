@@ -24,6 +24,14 @@ use Exception;
  */
 class User extends Model
 {
+    public const ROLE_ADMIN = 1;
+    public const ROLE_USER = 2;
+
+    public const ROLES = [
+        self::ROLE_ADMIN,
+        self::ROLE_USER,
+    ];
+
     /**
      * @return void
      * @throws Exception
@@ -62,7 +70,7 @@ class User extends Model
      */
     public function isAdmin(): bool
     {
-        return $this->role_id === Role::ROLE_ADMIN;
+        return $this->role_id === self::ROLE_ADMIN;
     }
 
     /**
