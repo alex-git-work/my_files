@@ -4,7 +4,7 @@ namespace App\Traits;
 
 use App\App;
 use App\Exceptions\UnauthorizedException;
-use App\Models\Role;
+use App\Models\User;
 
 /**
  * Trait Authorization
@@ -35,7 +35,7 @@ trait Authorization
             throw new UnauthorizedException();
         }
 
-        if ($forAdmin && ($user['role_id'] !== Role::ROLE_ADMIN)) {
+        if ($forAdmin && ($user['role_id'] !== User::ROLE_ADMIN)) {
             throw new UnauthorizedException();
         }
 

@@ -3,7 +3,6 @@
 namespace App\Validators;
 
 use App\Base\Validator;
-use App\Models\Role;
 use App\Models\User;
 
 /**
@@ -50,7 +49,7 @@ class UserCreateValidator extends Validator
                 $this->addError('role_id', 'Unknown param role_id');
             }
 
-            if (!in_array($this->cleanData['role_id'], Role::ROLES)) {
+            if (!in_array($this->cleanData['role_id'], User::ROLES)) {
                 $this->addError('email', 'Role not found');
             }
         }

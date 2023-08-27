@@ -11,7 +11,6 @@ use App\Exceptions\UnauthorizedException;
 use App\Exceptions\ValidateException;
 use App\Helpers\StringHelper;
 use App\Models\Mail;
-use App\Models\Role;
 use App\Models\User;
 use App\Response;
 use App\Traits\Authorization;
@@ -59,7 +58,7 @@ class UserController extends Controller
 
         $user = new User($config);
         $user->password = password_hash($user->password, PASSWORD_DEFAULT);
-        $user->role_id = Role::ROLE_USER;
+        $user->role_id = User::ROLE_USER;
         $user->created_at = now();
         $user->save();
 
