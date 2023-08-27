@@ -9,5 +9,6 @@ return [
     '/user/*' => [UserController::class, 'destroy'],
     '/admin/user/*' => [AdminController::class, 'destroy'],
     '/file/*' => [FileController::class, 'destroy'],
+    '/files/share/*/*' => [FileController::class, 'stopUserAccess'],
     '/directory/*' => [DirectoryController::class, 'destroy'],
 ];

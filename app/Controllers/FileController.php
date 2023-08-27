@@ -10,6 +10,7 @@ use App\Exceptions\UnauthorizedException;
 use App\Exceptions\ValidateException;
 use App\Models\Directory;
 use App\Models\File;
+use App\Models\User;
 use App\Response;
 use App\Traits\Authorization;
 use App\UploadedFile;
@@ -29,6 +30,7 @@ class FileController extends Controller
         'directory_id',
         'name',
         'hash',
+        'shared_to',
     ];
 
     /**
@@ -61,7 +63,7 @@ class FileController extends Controller
     {
         $currentUserId = $this->authCheck();
 
-        $file = $this->findModel(['id' => $id, 'user_id' => $currentUserId]);
+        $file = $this->findFile($id, $currentUserId);
 
         return $this->asJson([
             'file' => $file->getAttributes(except: self::HIDDEN_FILE_ATTRIBUTES)
@@ -199,6 +201,7 @@ class FileController extends Controller
         $validator = new FileValidator($data, $currentUserId);
 
         if (empty($data['directory_id'])) {
+            $validator->except = ['directory_id'];
             $validator->setRequiredKeys(['real_name']);
         }
 
@@ -258,7 +261,7 @@ class FileController extends Controller
     {
         $currentUserId = $this->authCheck();
 
-        $model = $this->findModel(['id' => $id, 'user_id' => $currentUserId]);
+        $model = $this->findFile($id, $currentUserId);
         $file = FILES . $model->name . '.' . $model->ext;
 
         if (!file_exists($file)) {
@@ -276,6 +279,122 @@ class FileController extends Controller
     }
 
     /**
+     * @param int $id
+     * @return Response
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     */
+    public function sharedList(int $id): Response
+    {
+        $currentUserId = $this->authCheck();
+
+        $file = $this->findModel(['id' => $id, 'user_id' => $currentUserId]);
+
+        if ($file->state === File::STATE_PRIVATE) {
+            $message = 'This file is private';
+            $usersInfo = [];
+        } else {
+            $users = User::findAll(['id' => $file->sharedToUsers]);
+            $message = 'These users got access to file';
+            $usersInfo = array_map(fn(User $u) => $u->getAttributes(['id', 'name', 'email', 'created_at']), $users);
+        }
+
+        return $this->asJson([
+            'message' => $message,
+            'fileId' => $id,
+            'users' => $usersInfo,
+        ]);
+    }
+
+    /**
+     * @param int $id
+     * @param int $userId
+     * @return Response
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     */
+    public function makeFileShared(int $id, int $userId): Response
+    {
+        $currentUserId = $this->authCheck();
+
+        $file = $this->findModel(['id' => $id, 'user_id' => $currentUserId]);
+        $user = $this->findUser($userId);
+
+        $file->share($user->id);
+        $file->save();
+
+        return $this->asJson([
+            'message' => 'File shared successfully',
+            'userId' => $user->id,
+            'file' => $file->getAttributes(except: self::HIDDEN_FILE_ATTRIBUTES)
+        ]);
+    }
+
+    /**
+     * @param int $id
+     * @param int $userId
+     * @return Response
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     */
+    public function stopUserAccess(int $id, int $userId): Response
+    {
+        $currentUserId = $this->authCheck();
+
+        $file = $this->findModel(['id' => $id, 'user_id' => $currentUserId]);
+        $user = $this->findUser($userId);
+
+        $file->makePrivate($user->id);
+        $file->save();
+
+        return $this->asJson([
+            'message' => 'Access blocked for the user',
+            'userId' => $user->id,
+            'fileId' => $file->id,
+        ]);
+    }
+
+    /**
+     * @return Response
+     * @throws UnauthorizedException
+     */
+    public function filesSharedForMe(): Response
+    {
+        $currentUserId = $this->authCheck();
+
+        $files = File::findAll([['shared_to', 'like', '%' . $currentUserId . '%']]);
+
+        $filesInfo = array_map(
+            fn(File $f) => $f->getAttributes(except: self::HIDDEN_FILE_ATTRIBUTES),
+            $files
+        );
+
+        return $this->asJson([
+            'files' => $filesInfo,
+        ]);
+    }
+
+    /**
+     * @return Response
+     * @throws UnauthorizedException
+     */
+    public function mySharedFiles(): Response
+    {
+        $currentUserId = $this->authCheck();
+
+        $files = File::findAll(['user_id' => $currentUserId, 'state' => File::STATE_SHARED]);
+
+        $filesInfo = array_map(
+            fn(File $f) => $f->getAttributes(except: self::HIDDEN_FILE_ATTRIBUTES),
+            $files
+        );
+
+        return $this->asJson([
+            'files' => $filesInfo,
+        ]);
+    }
+
+    /**
      * @param int|array $value
      * @return File
      * @throws NotFoundException
@@ -286,6 +405,43 @@ class FileController extends Controller
 
         if ($model === null) {
             throw new NotFoundException('File not found');
+        }
+
+        return $model;
+    }
+
+    /**
+     * @param int $id
+     * @param int $currentUserId
+     * @return File
+     * @throws NotFoundException
+     */
+    protected function findFile(int $id, int $currentUserId): File
+    {
+        $model = File::findOne(['id' => $id, 'user_id' => $currentUserId]);
+
+        if ($model === null) {
+            $model = File::findOne([['id', '=', $id], ['shared_to', 'like', '%' . $currentUserId . '%']]);
+
+            if ($model === null) {
+                throw new NotFoundException('File not found');
+            }
+        }
+
+        return $model;
+    }
+
+    /**
+     * @param int|array $value
+     * @return User
+     * @throws NotFoundException
+     */
+    protected function findUser(int|array $value): User
+    {
+        $model = User::findOne($value);
+
+        if ($model === null) {
+            throw new NotFoundException('User not found');
         }
 
         return $model;

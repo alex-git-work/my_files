@@ -16,9 +16,12 @@ use App\Helpers\DirectoryHelper;
  * @property string $ext
  * @property string $hash
  * @property int $state
+ * @property string $shared_to
  * @property string $path
  * @property string $created_at
  * @property string $updated_at
+ *
+ * @property array $sharedToUsers
  *
  * @property-read bool $isPrivate
  * @property-read bool $isShared
@@ -74,5 +77,56 @@ class File extends Model
     {
         $this->path = DirectoryHelper::makePath($id);
         DirectoryHelper::reset();
+    }
+
+    /**
+     * @return array
+     */
+    public function getSharedToUsers(): array
+    {
+        return $this->shared_to ? explode(',', $this->shared_to) : [];
+    }
+
+    /**
+     * @param array $ids
+     * @return void
+     */
+    public function setSharedToUsers(array $ids): void
+    {
+        $this->shared_to = implode(',', $ids);
+    }
+
+    /**
+     * @param int $id
+     * @return void
+     */
+    public function share(int $id): void
+    {
+        if (in_array($id, $this->sharedToUsers)) {
+            return;
+        }
+
+        $this->sharedToUsers = array_merge($this->sharedToUsers, [$id]);
+        $this->state = File::STATE_SHARED;
+        $this->updated_at = now();
+    }
+
+    /**
+     * @param int $id
+     * @return void
+     */
+    public function makePrivate(int $id): void
+    {
+        if (!in_array($id, $this->sharedToUsers)) {
+            return;
+        }
+
+        $this->sharedToUsers = array_filter($this->sharedToUsers, fn($v) => (int)$v !== $id);
+
+        if (empty($this->sharedToUsers)) {
+            $this->state = File::STATE_PRIVATE;
+        }
+
+        $this->updated_at = now();
     }
 }
