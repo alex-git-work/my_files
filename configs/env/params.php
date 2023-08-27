@@ -8,6 +8,7 @@ return [
     |
     */
 
+    'app_deployed' => true,
     'main_url' => '',
     'debug_mode' => false,
     'show_queries' => false,
