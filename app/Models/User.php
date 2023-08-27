@@ -64,4 +64,28 @@ class User extends Model
     {
         return $this->role_id === Role::ROLE_ADMIN;
     }
+
+    /**
+     * @return void
+     */
+    public function deleteUserData(): void
+    {
+        $files = App::$db
+            ->createCommand('SELECT id, name, ext FROM ' . File::tableName() . ' WHERE user_id = ' . $this->id)
+            ->queryAll();
+
+        $fileIds = array_column($files, 'id');
+
+        App::$db
+            ->createCommand('DELETE FROM ' . File::tableName() . ' WHERE id IN (' . implode(', ', $fileIds) . ')')
+            ->query();
+
+        App::$db
+            ->createCommand('DELETE FROM ' . Directory::tableName() . ' WHERE user_id = ' . $this->id)
+            ->query();
+
+        foreach ($files as $file) {
+            unlink(FILES . $file['name'] . '.' . $file['ext']);
+        }
+    }
 }

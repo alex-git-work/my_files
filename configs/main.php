@@ -7,4 +7,5 @@ return [
     'encoding' => params('encoding', 'UTF_8'),
     'token_ttl' => params('token_ttl', 20),
     'email' => params('email', ''),
+    'max_file_size' => params('max_file_size', 104857600),
 ];

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\App;
 use App\Base\Controller;
+use App\Exceptions\HttpException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnauthorizedException;
 use App\Exceptions\ValidateException;
@@ -11,6 +12,7 @@ use App\Models\User;
 use App\Response;
 use App\Traits\Authorization;
 use App\Validators\UserCreateValidator;
+use PDOException;
 
 /**
  * Class AdminController
@@ -109,6 +111,7 @@ class AdminController extends Controller
     /**
      * @param int $id
      * @return Response
+     * @throws HttpException
      * @throws NotFoundException
      * @throws UnauthorizedException
      */
@@ -122,7 +125,18 @@ class AdminController extends Controller
             $user = $this->findModel($currentUserId);
         }
 
-        $user->delete();
+        try {
+            App::$db->pdo->beginTransaction();
+
+            $user->deleteUserData();
+            $user->delete();
+
+            App::$db->pdo->commit();
+        } catch (PDOException $e) {
+            App::$db->pdo->rollBack();
+
+            throw new HttpException($e->getMessage(), 500);
+        }
 
         return $this->asJson([
             'message' => 'User deleted successfully',

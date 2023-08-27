@@ -16,6 +16,7 @@ return [
     'encoding' => 'UTF-8',
     'token_ttl' => 10,
     'email' => 'info@files.lcl',
+    'max_file_size' => 2147483648,
 
 
     /*
