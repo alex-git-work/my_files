@@ -122,6 +122,7 @@ class UserController extends Controller
     /**
      * @param int $id
      * @return Response
+     * @throws HttpException
      * @throws NotFoundException
      * @throws UnauthorizedException
      * @throws ValidateException
@@ -135,7 +136,19 @@ class UserController extends Controller
         }
 
         $user = $this->findModel($id);
-        $user->delete();
+
+        try {
+            App::$db->pdo->beginTransaction();
+
+            $user->deleteUserData();
+            $user->delete();
+
+            App::$db->pdo->commit();
+        } catch (PDOException $e) {
+            App::$db->pdo->rollBack();
+
+            throw new HttpException($e->getMessage(), 500);
+        }
 
         return $this->asJson([
             'message' => 'User deleted successfully',

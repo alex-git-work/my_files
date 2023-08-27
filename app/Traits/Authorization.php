@@ -28,10 +28,16 @@ trait Authorization
         }
 
         $user = App::$db->createCommand($sql, [':token' => $token])->query();
+        $condition = strtotime($user['last_request']) <= strtotime('now - ' . App::$params['token_ttl'] . ' minutes');
 
-        if ($user === false || strtotime($user['last_request']) <= strtotime('now - ' . App::$params['token_ttl'] . ' minutes')) {
+        if ($user === false || $condition) {
             throw new UnauthorizedException();
         }
+
+        App::$db->createCommand(
+            'UPDATE users SET last_request = \'' . now() . '\' WHERE id = :id',
+            [':id' => $user['id']]
+        )->query();
 
         return (int)$user['id'];
     }

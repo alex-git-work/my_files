@@ -1,6 +1,8 @@
 <?php
 
 use App\Controllers\AdminController;
+use App\Controllers\DirectoryController;
+use App\Controllers\FileController;
 use App\Controllers\MainController;
 use App\Controllers\UserController;
 
@@ -14,4 +16,7 @@ return [
     '/user/password_change/*' => [UserController::class, 'passwordChange'],
     '/admin/user' => [AdminController::class, 'index'],
     '/admin/users/*' => [AdminController::class, 'show'],
+    '/file' => [FileController::class, 'index'],
+    '/files/*' => [FileController::class, 'show'],
+    '/directories/*' => [DirectoryController::class, 'show'],
 ];

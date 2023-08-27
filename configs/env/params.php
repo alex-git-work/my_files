@@ -14,6 +14,7 @@ return [
     'encoding' => '',
     'token_ttl' => 0,
     'email' => '',
+    'max_file_size' => 0,
 
 
     /*

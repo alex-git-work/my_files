@@ -8,6 +8,8 @@ if (!defined('ABSPATH')) {
 
 const UPLOADS = ABSPATH . 'uploads/';
 
+const FILES = UPLOADS . 'files/';
+
 const CONFIGS = ABSPATH . 'configs/';
 
 const ROUTES = ABSPATH . 'routes/';

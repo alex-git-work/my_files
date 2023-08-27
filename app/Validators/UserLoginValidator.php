@@ -10,7 +10,7 @@ use App\Base\Validator;
  */
 class UserLoginValidator extends Validator
 {
-    protected array $keys = [
+    public array $keys = [
         'email',
         'password',
     ];
