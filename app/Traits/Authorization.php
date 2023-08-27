@@ -21,16 +21,21 @@ trait Authorization
     {
         $token = $this->getToken();
 
-        if ($forAdmin) {
-            $sql = 'SELECT * FROM users WHERE role_id = ' . Role::ROLE_ADMIN . ' AND token = :token';
-        } else {
-            $sql = 'SELECT * FROM users WHERE role_id = ' . Role::ROLE_USER . ' AND token = :token';
-        }
+        $sql = 'SELECT * FROM users WHERE token = :token';
 
         $user = App::$db->createCommand($sql, [':token' => $token])->query();
-        $condition = strtotime($user['last_request']) <= strtotime('now - ' . App::$params['token_ttl'] . ' minutes');
 
-        if ($user === false || $condition) {
+        if ($user === false) {
+            throw new UnauthorizedException();
+        }
+
+        $tokenExpired = strtotime($user['last_request']) <= strtotime('now - ' . App::$params['token_ttl'] . ' minutes');
+
+        if ($tokenExpired) {
+            throw new UnauthorizedException();
+        }
+
+        if ($forAdmin && ($user['role_id'] !== Role::ROLE_ADMIN)) {
             throw new UnauthorizedException();
         }
 
