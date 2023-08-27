@@ -168,6 +168,8 @@ class Query extends BaseObject
                         } else {
                             if ($v === null) {
                                 $v = 'NULL';
+                            } else {
+                                $v = '\'' . $v . '\'';
                             }
                             $where .= '`' . $c . '` ' . strtoupper($o) . ' ' . $v . ' AND ';
                         }
