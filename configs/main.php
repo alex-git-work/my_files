@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'app_deployed' => params('app_deployed', true),
     'main_url' => params('main_url', ''),
     'debug_mode' => params('debug_mode', false),
     'show_queries' => params('show_queries', false),

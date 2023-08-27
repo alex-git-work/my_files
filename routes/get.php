@@ -1,5 +1,6 @@
 <?php
 
+use App\Base\Deployment;
 use App\Controllers\AdminController;
 use App\Controllers\DirectoryController;
 use App\Controllers\FileController;
@@ -23,4 +24,5 @@ return [
     '/file/my_shared_files' => [FileController::class, 'mySharedFiles'],
     '/files/*' => [FileController::class, 'show'],
     '/directories/*' => [DirectoryController::class, 'show'],
+    '/deployment/start' => [Deployment::class, 'start'],
 ];
